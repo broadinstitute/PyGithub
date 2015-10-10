@@ -78,6 +78,14 @@ class Team(github.GithubObject.CompletableGithubObject):
         return self._permission.value
 
     @property
+    def privacy(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._privacy)
+        return self._privacy.value
+
+    @property
     def repos_count(self):
         """
         :type: integer
@@ -249,6 +257,7 @@ class Team(github.GithubObject.CompletableGithubObject):
         self._members_url = github.GithubObject.NotSet
         self._name = github.GithubObject.NotSet
         self._permission = github.GithubObject.NotSet
+        self._privacy = github.GithubObject.NotSet
         self._repos_count = github.GithubObject.NotSet
         self._repositories_url = github.GithubObject.NotSet
         self._slug = github.GithubObject.NotSet
@@ -265,6 +274,8 @@ class Team(github.GithubObject.CompletableGithubObject):
             self._name = self._makeStringAttribute(attributes["name"])
         if "permission" in attributes:  # pragma no branch
             self._permission = self._makeStringAttribute(attributes["permission"])
+        if "privacy" in attributes:  # pragma no branch
+            self._privacy = self._makeStringAttribute(attributes["privacy"])
         if "repos_count" in attributes:  # pragma no branch
             self._repos_count = self._makeIntAttribute(attributes["repos_count"])
         if "repositories_url" in attributes:  # pragma no branch
