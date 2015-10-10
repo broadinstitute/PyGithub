@@ -109,6 +109,12 @@ class Repository(Framework.TestCase):
         issue = self.repo.create_issue("Issue also created by PyGithub", "Body created by PyGithub", user, milestone, [question])
         self.assertEqual(issue.number, 30)
 
+    def testCreateIssueWithAllArgumentsStringLabel(self):
+        user = self.g.get_user("jacquev6")
+        milestone = self.repo.get_milestone(2)
+        issue = self.repo.create_issue("Issue also created by PyGithub", "Body created by PyGithub", user, milestone, ['Question'])
+        self.assertEqual(issue.number, 30)
+
     def testCreateLabel(self):
         label = self.repo.create_label("Label with silly name % * + created by PyGithub", "00ff00")
         self.assertEqual(label.color, "00ff00")
@@ -492,3 +498,30 @@ class Repository(Framework.TestCase):
         stats = self.repo.get_stats_punch_card()
         self.assertEqual(stats.get(4, 12), 7)
         self.assertEqual(stats.get(6, 18), 2)
+
+
+class LazyRepository(Framework.TestCase):
+
+    def setUp(self):
+        Framework.TestCase.setUp(self)
+        self.user = self.g.get_user()
+        self.repository_name = '%s/%s' % (self.user.login, "PyGithub")
+
+    def getLazyRepository(self):
+        return self.g.get_repo(self.repository_name, lazy=True)
+
+    def getEagerRepository(self):
+        return self.g.get_repo(self.repository_name, lazy=False)
+
+    def testGetIssues(self):
+        lazy_repo = self.getLazyRepository()
+        issues = lazy_repo.get_issues()
+        eager_repo = self.getEagerRepository()
+        issues2 = eager_repo.get_issues()
+        self.assertListKeyEqual(issues2, id, [x for x in issues])
+
+    def testOwner(self):
+        lazy_repo = self.getLazyRepository()
+        owner = lazy_repo.owner
+        eager_repo = self.getEagerRepository()
+        self.assertEqual(owner, eager_repo.owner)
