@@ -111,14 +111,14 @@ class Team(github.GithubObject.CompletableGithubObject):
 
     def add_to_members(self, member):
         """
-        :calls: `PUT /teams/:id/members/:user <http://developer.github.com/v3/orgs/teams>`_
+        :calls: `PUT /teams/:id/memberships/:user <http://developer.github.com/v3/orgs/teams>`_
         :param member: :class:`github.NamedUser.NamedUser`
         :rtype: None
         """
         assert isinstance(member, github.NamedUser.NamedUser), member
         headers, data = self._requester.requestJsonAndCheck(
             "PUT",
-            self.url + "/members/" + member._identity
+            self.url + "/memberships/" + member._identity
         )
 
     def add_membership(self, member):
@@ -260,6 +260,7 @@ class Team(github.GithubObject.CompletableGithubObject):
         self._members_url = github.GithubObject.NotSet
         self._name = github.GithubObject.NotSet
         self._permission = github.GithubObject.NotSet
+        self._privacy = github.GithubObject.NotSet
         self._repos_count = github.GithubObject.NotSet
         self._repositories_url = github.GithubObject.NotSet
         self._slug = github.GithubObject.NotSet
@@ -276,6 +277,8 @@ class Team(github.GithubObject.CompletableGithubObject):
             self._name = self._makeStringAttribute(attributes["name"])
         if "permission" in attributes:  # pragma no branch
             self._permission = self._makeStringAttribute(attributes["permission"])
+        if "privacy" in attributes:  # pragma no branch
+            self._privacy = self._makeStringAttribute(attributes["privacy"])
         if "repos_count" in attributes:  # pragma no branch
             self._repos_count = self._makeIntAttribute(attributes["repos_count"])
         if "repositories_url" in attributes:  # pragma no branch
