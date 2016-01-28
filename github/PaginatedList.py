@@ -158,7 +158,7 @@ class PaginatedList(PaginatedListBase):
             "GET",
             self.__nextUrl,
             parameters=self.__nextParams,
-            headers=self.__headers
+            headers={ 'Accept': 'application/vnd.github.ironman-preview+json' }
         )
         data = data if data else []
 
