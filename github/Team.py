@@ -111,14 +111,14 @@ class Team(github.GithubObject.CompletableGithubObject):
 
     def add_to_members(self, member):
         """
-        :calls: `PUT /teams/:id/memberships/:user <http://developer.github.com/v3/orgs/teams>`_
+        :calls: `PUT /teams/:id/members/:user <http://developer.github.com/v3/orgs/teams>`_
         :param member: :class:`github.NamedUser.NamedUser`
         :rtype: None
         """
         assert isinstance(member, github.NamedUser.NamedUser), member
         headers, data = self._requester.requestJsonAndCheck(
             "PUT",
-            self.url + "/memberships/" + member._identity
+            self.url + "/members/" + member._identity
         )
 
     def add_membership(self, member):
