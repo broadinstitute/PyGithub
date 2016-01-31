@@ -2,9 +2,16 @@
 
 # ########################## Copyrights and license ############################
 #                                                                              #
+# Copyright 2012 Christopher Gilbert <christopher.john.gilbert@gmail.com>      #
+# Copyright 2012 Steve English <steve.english@navetas.com>                     #
 # Copyright 2012 Vincent Jacques <vincent@vincent-jacques.net>                 #
 # Copyright 2012 Zearin <zearin@gonk.net>                                      #
+# Copyright 2013 AKFish <akfish@gmail.com>                                     #
+# Copyright 2013 Adrian Petrescu <adrian.petrescu@maluuba.com>                 #
+# Copyright 2013 Mark Roddy <markroddy@gmail.com>                              #
 # Copyright 2013 Vincent Jacques <vincent@vincent-jacques.net>                 #
+# Copyright 2013 martinqt <m.ki2@laposte.net>                                  #
+# Copyright 2015 Dan Vanderkam <danvdk@gmail.com>                              #
 #                                                                              #
 # This file is part of PyGithub. http://jacquev6.github.com/PyGithub/          #
 #                                                                              #
@@ -23,21 +30,35 @@
 #                                                                              #
 # ##############################################################################
 
-import Framework
+import github
 
 
-class Branch(Framework.TestCase):
-    def setUp(self):
-        Framework.TestCase.setUp(self)
-        self.branch = self.g.get_user().get_repo("PyGithub").get_branches()[0]
+class Stargazer(github.GithubObject.NonCompletableGithubObject):
+    """
+    This class represents Stargazers with the date of starring as returned by
+    https://developer.github.com/v3/activity/starring/#alternative-response-with-star-creation-timestamps
+    """
+    @property
+    def starred_at(self):
+        """
+        :type: datetime.datetime
+        """
+        return self._starred_at.value
 
-    def testAttributes(self):
-        self.assertEqual(self.branch.name, "topic/RewriteWithGeneratedCode")
-        self.assertEqual(self.branch.commit.sha, "1292bf0e22c796e91cc3d6e24b544aece8c21f2a")
+    @property
+    def user(self):
+        """
+        :type: :class:`github.NamedUser`
+        """
+        return self._user.value
 
-    def testProtectedAttributes(self):
-        self.branch = self.g.get_user().get_repo("PyGithub").get_protected_branch("master")
-        self.assertEqual(self.branch.name, "master")
-        self.assertFalse(self.branch.protected)
-        self.assertEqual(self.branch.enforcement_level, "off")
-        self.assertEqual(self.branch.contexts, [])
+    def _initAttributes(self):
+        self._starred_at = github.GithubObject.NotSet
+        self._user = github.GithubObject.NotSet
+        self._url = github.GithubObject.NotSet
+
+    def _useAttributes(self, attributes):
+        if 'starred_at' in attributes:
+            self._starred_at = self._makeDatetimeAttribute(attributes['starred_at'])
+        if 'user' in attributes:
+            self._user = self._makeClassAttribute(github.NamedUser.NamedUser, attributes['user'])

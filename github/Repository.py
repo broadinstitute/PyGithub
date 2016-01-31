@@ -11,6 +11,7 @@
 # Copyright 2013 Mark Roddy <markroddy@gmail.com>                              #
 # Copyright 2013 Vincent Jacques <vincent@vincent-jacques.net>                 #
 # Copyright 2013 martinqt <m.ki2@laposte.net>                                  #
+# Copyright 2015 Jannis Gebauer <ja.geb@me.com>                                #
 #                                                                              #
 # This file is part of PyGithub. http://jacquev6.github.com/PyGithub/          #
 #                                                                              #
@@ -67,6 +68,7 @@ import github.StatsCommitActivity
 import github.StatsCodeFrequency
 import github.StatsParticipation
 import github.StatsPunchCard
+import github.Stargazer
 
 
 class Repository(github.GithubObject.CompletableGithubObject):
@@ -1088,6 +1090,20 @@ class Repository(github.GithubObject.CompletableGithubObject):
         )
         return github.Branch.Branch(self._requester, headers, data, completed=True)
 
+    def get_protected_branch(self, branch):
+        """
+        :calls: `GET /repos/:owner/:repo/branches/:branch <https://developer.github.com/v3/repos/#response-10>`_
+        :param branch: string
+        :rtype: :class:`github.Branch.Branch`
+        """
+        assert isinstance(branch, (str, unicode)), branch
+        headers, data = self._requester.requestJsonAndCheck(
+            "GET",
+            self.url + "/branches/" + branch,
+            headers={'Accept': 'application/vnd.github.loki-preview+json'}
+        )
+        return github.Branch.Branch(self._requester, headers, data, completed=True)
+
     def get_branches(self):
         """
         :calls: `GET /repos/:owner/:repo/branches <http://developer.github.com/v3/repos>`_
@@ -1430,7 +1446,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         )
         return github.Issue.Issue(self._requester, headers, data, completed=True)
 
-    def get_issues(self, milestone=github.GithubObject.NotSet, state=github.GithubObject.NotSet, assignee=github.GithubObject.NotSet, mentioned=github.GithubObject.NotSet, labels=github.GithubObject.NotSet, sort=github.GithubObject.NotSet, direction=github.GithubObject.NotSet, since=github.GithubObject.NotSet):
+    def get_issues(self, milestone=github.GithubObject.NotSet, state=github.GithubObject.NotSet, assignee=github.GithubObject.NotSet, mentioned=github.GithubObject.NotSet, labels=github.GithubObject.NotSet, sort=github.GithubObject.NotSet, direction=github.GithubObject.NotSet, since=github.GithubObject.NotSet, creator=github.GithubObject.NotSet):
         """
         :calls: `GET /repos/:owner/:repo/issues <http://developer.github.com/v3/issues>`_
         :param milestone: :class:`github.Milestone.Milestone` or "none" or "*"
@@ -1441,6 +1457,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         :param sort: string
         :param direction: string
         :param since: datetime.datetime
+        :param creator: string or :class:`github.NamedUser.NamedUser`
         :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Issue.Issue`
         """
         assert milestone is github.GithubObject.NotSet or milestone == "*" or milestone == "none" or isinstance(milestone, github.Milestone.Milestone), milestone
@@ -1451,6 +1468,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         assert sort is github.GithubObject.NotSet or isinstance(sort, (str, unicode)), sort
         assert direction is github.GithubObject.NotSet or isinstance(direction, (str, unicode)), direction
         assert since is github.GithubObject.NotSet or isinstance(since, datetime.datetime), since
+        assert creator is github.GithubObject.NotSet or isinstance(creator, github.NamedUser.NamedUser) or isinstance(creator, (str, unicode)), creator
         url_parameters = dict()
         if milestone is not github.GithubObject.NotSet:
             if isinstance(milestone, str):
@@ -1474,6 +1492,11 @@ class Repository(github.GithubObject.CompletableGithubObject):
             url_parameters["direction"] = direction
         if since is not github.GithubObject.NotSet:
             url_parameters["since"] = since.strftime("%Y-%m-%dT%H:%M:%SZ")
+        if creator is not github.GithubObject.NotSet:
+            if isinstance(creator, str):
+                url_parameters["creator"] = creator
+            else:
+                url_parameters["creator"] = creator._identity
         return github.PaginatedList.PaginatedList(
             github.Issue.Issue,
             self._requester,
@@ -1655,19 +1678,28 @@ class Repository(github.GithubObject.CompletableGithubObject):
         )
         return github.PullRequest.PullRequest(self._requester, headers, data, completed=True)
 
-    def get_pulls(self, state=github.GithubObject.NotSet, sort=github.GithubObject.NotSet):
+    def get_pulls(self, state=github.GithubObject.NotSet, sort=github.GithubObject.NotSet, direction=github.GithubObject.NotSet, base=github.GithubObject.NotSet):
         """
         :calls: `GET /repos/:owner/:repo/pulls <http://developer.github.com/v3/pulls>`_
         :param state: string
+        :param sort: string
+        :param direction: string
+        :param base: string
         :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.PullRequest.PullRequest`
         """
         assert state is github.GithubObject.NotSet or isinstance(state, (str, unicode)), state
         assert sort is github.GithubObject.NotSet or isinstance(sort, (str, unicode)), sort
+        assert direction is github.GithubObject.NotSet or isinstance(direction, (str, unicode)), direction
+        assert base is github.GithubObject.NotSet or isinstance(base, (str, unicode)), base
         url_parameters = dict()
         if state is not github.GithubObject.NotSet:
             url_parameters["state"] = state
         if sort is not github.GithubObject.NotSet:
             url_parameters["sort"] = sort
+        if direction is not github.GithubObject.NotSet:
+            url_parameters["direction"] = direction
+        if base is not github.GithubObject.NotSet:
+            url_parameters["base"] = base
         return github.PaginatedList.PaginatedList(
             github.PullRequest.PullRequest,
             self._requester,
@@ -1737,6 +1769,19 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self._requester,
             self.url + "/stargazers",
             None
+        )
+
+    def get_stargazers_with_dates(self):
+        """
+        :calls: `GET /repos/:owner/:repo/stargazers <http://developer.github.com/v3/activity/starring>`_
+        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Stargazer.Stargazer`
+        """
+        return github.PaginatedList.PaginatedList(
+            github.Stargazer.Stargazer,
+            self._requester,
+            self.url + "/stargazers",
+            None,
+            headers={'Accept': 'application/vnd.github.v3.star+json'}
         )
 
     def get_stats_contributors(self):
@@ -1975,6 +2020,38 @@ class Repository(github.GithubObject.CompletableGithubObject):
             return None
         else:
             return github.Commit.Commit(self._requester, headers, data, completed=True)
+
+    def protect_branch(self, branch, enabled, enforcement_level=github.GithubObject.NotSet, contexts=github.GithubObject.NotSet):
+        """
+        :calls: `PATCH /repos/:owner/:repo/branches/:branch <https://developer.github.com/v3/repos/#enabling-and-disabling-branch-protection>`_
+        :param branch: string
+        :param enabled: boolean
+        :param enforcement_level: string
+        :param contexts: list of strings
+        :rtype: None
+        """
+
+        assert isinstance(branch, (str, unicode))
+        assert isinstance(enabled, bool)
+        assert enforcement_level is github.GithubObject.NotSet or isinstance(enforcement_level, (str, unicode)), enforcement_level
+        assert contexts is github.GithubObject.NotSet or all(isinstance(element, (str, unicode)) or isinstance(element, str) for element in contexts), contexts
+
+        post_parameters = {
+            "protection": {}
+        }
+        if enabled is not github.GithubObject.NotSet:
+            post_parameters["protection"]["enabled"] = enabled
+        if enforcement_level is not github.GithubObject.NotSet:
+            post_parameters["protection"]["required_status_checks"] = {}
+            post_parameters["protection"]["required_status_checks"]["enforcement_level"] = enforcement_level
+        if contexts is not github.GithubObject.NotSet:
+            post_parameters["protection"]["required_status_checks"]["contexts"] = contexts
+        headers, data = self._requester.requestJsonAndCheck(
+            "PATCH",
+            self.url + "/branches/" + branch,
+            input=post_parameters,
+            headers={'Accept': 'application/vnd.github.loki-preview+json'}
+        )
 
     def remove_from_collaborators(self, collaborator):
         """

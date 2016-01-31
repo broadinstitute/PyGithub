@@ -29,6 +29,7 @@ from Authentication import *
 from Authorization import *
 from Branch import *
 from Commit import *
+from CommitCombinedStatus import *
 from CommitComment import *
 from CommitStatus import *
 from ContentFile import *

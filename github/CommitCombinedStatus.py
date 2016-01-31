@@ -26,41 +26,14 @@
 
 import github.GithubObject
 
-import github.NamedUser
+import github.CommitStatus
+import github.Repository
 
 
-class CommitStatus(github.GithubObject.NonCompletableGithubObject):
+class CommitCombinedStatus(github.GithubObject.NonCompletableGithubObject):
     """
-    This class represents CommitStatuss as returned for example by https://developer.github.com/v3/repos/statuses/
+    This class represents CommitCombinedStatus as returned for example by https://developer.github.com/v3/repos/statuses/
     """
-
-    @property
-    def created_at(self):
-        """
-        :type: datetime.datetime
-        """
-        return self._created_at.value
-
-    @property
-    def creator(self):
-        """
-        :type: :class:`github.NamedUser.NamedUser`
-        """
-        return self._creator.value
-
-    @property
-    def description(self):
-        """
-        :type: string
-        """
-        return self._description.value
-
-    @property
-    def id(self):
-        """
-        :type: integer
-        """
-        return self._id.value
 
     @property
     def state(self):
@@ -70,18 +43,25 @@ class CommitStatus(github.GithubObject.NonCompletableGithubObject):
         return self._state.value
 
     @property
-    def target_url(self):
+    def sha(self):
         """
         :type: string
         """
-        return self._target_url.value
+        return self._sha.value
 
     @property
-    def updated_at(self):
+    def total_count(self):
         """
-        :type: datetime.datetime
+        :type: integer
         """
-        return self._updated_at.value
+        return self._total_count.value
+
+    @property
+    def commit_url(self):
+        """
+        :type: string
+        """
+        return self._commit_url.value
 
     @property
     def url(self):
@@ -90,30 +70,41 @@ class CommitStatus(github.GithubObject.NonCompletableGithubObject):
         """
         return self._url.value
 
+    @property
+    def repository(self):
+        """
+        :type: :class:`github.Repository.Repository`
+        """
+        return self._repository.value
+
+    @property
+    def statuses(self):
+        """
+        :type: list of :class:`CommitStatus`
+        """
+        return self._statuses.value
+
     def _initAttributes(self):
-        self._created_at = github.GithubObject.NotSet
-        self._creator = github.GithubObject.NotSet
-        self._description = github.GithubObject.NotSet
-        self._id = github.GithubObject.NotSet
         self._state = github.GithubObject.NotSet
-        self._target_url = github.GithubObject.NotSet
-        self._updated_at = github.GithubObject.NotSet
+        self._sha = github.GithubObject.NotSet
+        self._total_count = github.GithubObject.NotSet
+        self._commit_url = github.GithubObject.NotSet
         self._url = github.GithubObject.NotSet
+        self._repository = github.GithubObject.NotSet
+        self._statuses = github.GithubObject.NotSet
 
     def _useAttributes(self, attributes):
-        if "created_at" in attributes:  # pragma no branch
-            self._created_at = self._makeDatetimeAttribute(attributes["created_at"])
-        if "creator" in attributes:  # pragma no branch
-            self._creator = self._makeClassAttribute(github.NamedUser.NamedUser, attributes["creator"])
-        if "description" in attributes:  # pragma no branch
-            self._description = self._makeStringAttribute(attributes["description"])
-        if "id" in attributes:  # pragma no branch
-            self._id = self._makeIntAttribute(attributes["id"])
         if "state" in attributes:  # pragma no branch
             self._state = self._makeStringAttribute(attributes["state"])
-        if "target_url" in attributes:  # pragma no branch
-            self._target_url = self._makeStringAttribute(attributes["target_url"])
-        if "updated_at" in attributes:  # pragma no branch
-            self._updated_at = self._makeDatetimeAttribute(attributes["updated_at"])
+        if "sha" in attributes:  # pragma no branch
+            self._sha = self._makeStringAttribute(attributes["sha"])
+        if "total_count" in attributes:  # pragma no branch
+            self._total_count = self._makeIntAttribute(attributes["total_count"])
+        if "commit_url" in attributes:  # pragma no branch
+            self._commit_url = self._makeStringAttribute(attributes["commit_url"])
         if "url" in attributes:  # pragma no branch
             self._url = self._makeStringAttribute(attributes["url"])
+        if "repository" in attributes:  # pragma no branch
+            self._repository = self._makeClassAttribute(github.Repository.Repository, attributes["repository"])
+        if "statuses" in attributes:  # pragma no branch
+            self._statuses = self._makeListOfClassesAttribute(github.CommitStatus.CommitStatus, attributes["statuses"])
