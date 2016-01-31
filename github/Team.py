@@ -195,6 +195,8 @@ class Team(github.GithubObject.CompletableGithubObject):
                 isinstance(role, (str, unicode))), role
 
         url_parameters = {}
+        if role is not github.GithubObject.NotSet:
+            url_parameters["role"] = role
         return github.PaginatedList.PaginatedList(
             github.NamedUser.NamedUser,
             self._requester,
